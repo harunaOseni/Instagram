@@ -6,3 +6,29 @@ const ErrorHandler = require("../utils/errorHandler");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 const deleteFile = require("../utils/deleteFile");
+
+// Signup User
+exports.signupUser = catchAsync(async (req, res, next) => {
+  const { name, email, username, password } = req.body;
+
+  const user = await User.findOne({
+    $or: [{ email }, { username }],
+  });
+
+  if (user) {
+    if (user.username === username) {
+      return next(new ErrorHandler("Username already exists", 401));
+    }
+    return next(new ErrorHandler("Email already exists", 401));
+  }
+
+  const newUser = await User.create({
+    name,
+    email,
+    username,
+    password,
+    avatar: req.file ? req.file.filename : null,
+  });
+
+  sendCookie(newUser, 201, res);
+});
