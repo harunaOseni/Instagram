@@ -31,5 +31,20 @@ exports.newChat = catchAsync(async (req, res, next) => {
 
 // Get All Chats
 exports.getChats = catchAsync(async (req, res, next) => {
-    
+  const { _id } = req.user;
+
+  const chats = await Chat.find({
+    users: {
+      $in: [_id],
+    },
+  })
+    .sort({
+      updatedAt: -1,
+    })
+    .populate("users latestMessage");
+
+  res.status(200).json({
+    success: true,
+    chats,
+  });
 });
