@@ -8,7 +8,28 @@ exports.newChat = catchAsync(async (req, res, next) => {
 
   const chatExists = await Chat.findOne({
     users: {
-        $all: [_id, receiverId],
-    }
+      $all: [_id, receiverId],
+    },
   });
+
+  if (chatExists) {
+    return res.status(200).json({
+      success: true,
+      newChat: chatExists,
+    });
+  }
+
+  const newChat = await Chat.create({
+    users: [_id, receiverId],
+  });
+
+  res.status(200).json({
+    success: true,
+    newChat,
+  });
+});
+
+// Get All Chats
+exports.getChats = catchAsync(async (req, res, next) => {
+    
 });
