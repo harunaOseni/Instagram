@@ -170,3 +170,41 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   await user.save();
   sendCookie(user, 201, res);
 });
+
+// Update Profile
+exports.updateProfile = catchAsync(async (req, res, next) => {
+  const { name, username, bio, website, email, avatar } = req.body;
+
+  const newUserData = {
+    name,
+    username,
+    website,
+    bio,
+    email,
+  };
+
+  const userExists = await User.findOne({
+    $or: [{ email }, { username }],
+  });
+
+  if (userExists && userExists._id.toString() !== req.user._id.toString()) {
+    return next(new ErrorHandler("User Already Exists", 404));
+  }
+
+  if (avatar !== "") {
+    const user = await User.findById(req.user._id);
+
+    await deleteFile("/profiles", user.avatar);
+    newUserData.avatar = req.file.filename;
+  }
+
+  await User.findByIdAndUpdate(req.user._id, newUserData, {
+    new: true,
+    runValidators: true,
+    useFindAndModify: true,
+  });
+
+  res.status(200).json({
+    success: true,
+  });
+});
