@@ -281,3 +281,44 @@ exports.followUser = catchAsync(async (req, res, next) => {
     });
   }
 });
+
+// Forgot Password
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  const user = await User.findOne({
+    email: req.body.email,
+  });
+
+  if (!user) {
+    return next(new ErrorHandler("User Not Found", 404));
+  }
+
+  const resetPasswordToken = await user.getResetPasswordToken();
+
+  await user.save();
+
+  const resetPasswordUrl = `https://${req.get(
+    "host"
+  )}/password/resey/${resetPasswordToken}`;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      templateId: process.env.SENDGRID_RESET_TEMPLATEID,
+      data: {
+        reset_url: resetPasswordUrl,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Email Sent to ${user.email}`,
+    });
+  } catch (error) {
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save({ validateBeforeSave: false });
+
+    return next(new ErrorHandler(error.message, 500));
+  }
+});
