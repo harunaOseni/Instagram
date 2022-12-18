@@ -53,3 +53,120 @@ exports.loginUser = catchAsync(async (req, res, next) => {
 
   sendCookie(user, 201, res);
 });
+
+// Logout User
+exports.logoutUser = catchAsync(async (req, res, next) => {
+  res.cookie("token", null, {
+    expires: new Date(Date.now()),
+    httpOnly: true,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Logged out",
+  });
+});
+
+// Get User Details --Logged In User
+exports.getAccountDetails = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user._id).populate({
+    path: "posts",
+    populate: {
+      path: "postedBy",
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    user,
+  });
+});
+
+// Get User Details
+exports.getUserDetails = catchAsync(async (req, res, next) => {
+  const user = await User.findOne({
+    username: req.params.username,
+  })
+    .populate("followers following")
+    .populate({
+      path: "posts",
+      populate: {
+        path: "comments",
+        populate: {
+          path: "user",
+        },
+      },
+    })
+    .populate({
+      path: "posts",
+      populate: {
+        path: "postedBy",
+      },
+    })
+    .populate({
+      path: "saved",
+      populate: {
+        path: "comments",
+        populate: {
+          path: "user",
+        },
+      },
+    })
+    .populate({
+      path: "saved",
+      populate: {
+        path: "postedBy",
+      },
+    });
+
+  res.status(200).json({
+    success: true,
+    user,
+  });
+});
+
+// Get User Details By Id
+exports.getUserDetailsById = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.params.id);
+
+  res.status(200).json({
+    success: true,
+    user,
+  });
+});
+
+// Get All Users
+exports.getAllUsers = catchAsync(async (req, res, next) => {
+  const users = await User.find();
+
+  const suggestedUsers = users
+    .filter(
+      (user) =>
+        !user.followers.includes(req.user._id) &&
+        user._id.toString() !== req.user._id.toString()
+    )
+    .slice(0, 5)
+    .reverse();
+
+  res.status(200).json({
+    success: true,
+    users: suggestedUsers,
+  });
+});
+
+// Update Password
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  const { oldPassword, newPassword } = req.body;
+
+  const user = await User.findById(req.user._id).select("+password");
+
+  const isPasswordMatched = await user.comparePassword(oldPassword);
+
+  if (!isPasswordMatched) {
+    return next(new ErrorHandler("Old password doesn't match", 401));
+  }
+
+  user.password = newPassword;
+  await user.save();
+  sendCookie(user, 201, res);
+});
