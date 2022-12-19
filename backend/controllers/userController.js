@@ -322,3 +322,54 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 500));
   }
 });
+
+// Reset Password
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return next(new ErrorHandler("Invalid Token", 400));
+  }
+
+  user.password = req.body.password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
+  await user.save();
+  sendCookie(user, 200, res);
+});
+
+// User Search
+exports.searchUsers = catchAsync(async (req, res, next) => {
+  if (req.query.keyword) {
+    const users = await User.find({
+      $or: [
+        {
+          name: {
+            $regex: req.query.keyword,
+            $options: "i",
+          },
+        },
+        {
+          username: {
+            $regex: req.query.keyword,
+            $options: "i",
+          },
+        },
+      ],
+    });
+
+    res.status(200).json({
+      success: true,
+      users,
+    });
+  }
+});
