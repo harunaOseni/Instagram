@@ -4,11 +4,12 @@ import TextField from "@mui/material/TextField";
 import { toast } from "react-toastify";
 
 const Login = lazy(() => import("./components/User/Login"));
+const SignUp = lazy(() => import("./components/User/SignUp"));
 
 function App() {
   return (
     <>
-      <Login />
+      <SignUp />
     </>
   );
 }
