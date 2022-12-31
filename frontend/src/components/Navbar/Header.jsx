@@ -11,6 +11,7 @@ import {
   messageOutline,
   postUploadOutline,
 } from "./SvgIcons";
+import NewPost from "./NewPost";
 
 const Header = () => {
   return (
@@ -46,6 +47,7 @@ const Header = () => {
           </div>
         </div>
         {/* <ProfileDetails /> */}
+        < NewPost />
       </div>
     </nav>
   );
