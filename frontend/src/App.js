@@ -9,12 +9,14 @@ const SignUp = lazy(() => import("./components/User/SignUp"));
 const ForgotPassword = lazy(() => import("./components/User/ForgotPassword"));
 const ResetPassword = lazy(() => import("./components/User/ResetPassword"));
 const Profile = lazy(() => import("./components/User/Profile"));
+const Update = lazy(() => import("./components/User/Update/Update"));
+
 
 function App() {
   return (
     <>
       <Header />
-      <Profile />
+      <Update />
     </>
   );
 }
