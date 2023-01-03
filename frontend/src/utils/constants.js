@@ -25,6 +25,10 @@ export const stories = [
     image: "expressjs",
   },
   {
+    title: "MongoDB",
+    image: "mongodb",
+  },
+  {
     title: "React.js",
     image: "reactjs",
   },
@@ -34,7 +38,7 @@ export const stories = [
   },
   {
     title: "TailwindCSS",
-    image: "tailwindcss",
+    image: "tailwind",
   },
   {
     title: "MaterialUI",
